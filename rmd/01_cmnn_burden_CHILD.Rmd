@@ -1,6 +1,11 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
 # Communicable, Maternal, Neonatal, and Nutritional Disease Burden (CMNN)
 
-```{r}
+```{r echo=FALSE, include = FALSE}
 # Load necessary packages
 pacman::p_load(tidyverse, knitr, here)
 
@@ -8,27 +13,49 @@ pacman::p_load(tidyverse, knitr, here)
 data_cmnn <- read_csv(here("data/burden-of-disease-cmnn.csv"))
 ```
 
-```{r}
+```{r echo=FALSE}
 # Filter the dataset to include only the three countries chosen by your group.
-data_cmnn_mini <- "WRITE_YOUR_CODE_HERE"
+data_cmnn_mini <- data_cmnn %>% 
+  select("Entity", "Year", "DALYs (Disability-Adjusted Life Years) - Communicable, maternal, neonatal, and nutritional diseases - Sex: Both - Age: Age-standardized (Rate)") %>% 
+  rename(cmmn_dalys= "DALYs (Disability-Adjusted Life Years) - Communicable, maternal, neonatal, and nutritional diseases - Sex: Both - Age: Age-standardized (Rate)",
+         country= "Entity") %>% 
+  filter(country %in% c("Colombia", "Switzerland", "Spain"))
+
+
 ```
 
 ## Table of Estimates for CMNN Burden Over Time
 
-```{r}
+```{r echo=FALSE}
 # Here render a table for the DALY burden over time for the three countries.
 # You should pivot the data wider to show each country in a separate column.
-data_cmnn_wide <- "WRITE_YOUR_CODE_HERE"
+data_cmnn_wide <- data_cmnn_mini %>%  
+  pivot_wider(names_from = country, values_from = c (3))
+
+kable(data_cmnn_wide)
+  
 # Use kable() from the knitr package to render the table.
 ```
 
 ## Plot Showing Trends in CMNN Burden Over Time
 
-```{r}
+```{r echo=FALSE}
 # Here, plot a line graph showing the trend of DALY burden for the chosen countries over time. You can use ggplot2 to create this plot. Each country's line should be a different color.
+
+DALYtrend_plot <- ggplot(data= data_cmnn_mini, aes(x=Year, y=cmmn_dalys, group= country, color= country)) + 
+geom_line() +
+labs (y="DALYs ", x="Year", title="DALY trend from CMMN 1990-2019") 
+
+DALYtrend_plot
+
 # NOTE: Use your long 'mini' data frame for plotting, not the wide data used for the table. 
 ```
 
 ## Summary of CMNN Burden Findings
 
-Provide a brief analysis based on the data presented in the table and chart. Highlight any significant findings or patterns. About 3 sentences.
+
+The country with the greater number of DALYs from Communicable, Maternal, Neonatal and Nutritional diseases overtime was  `r paste0(data_cmnn_mini %>% filter(cmmn_dalys == max(cmmn_dalys)) %>% pull(country))` with  `r paste0 (mean(data_cmnn_wide$Colombia))` average DALYs between 1990 and 2019. The country with the smaller number of DALYs was `r paste0(data_cmnn_mini %>% filter(cmmn_dalys == min(cmmn_dalys)) %>% pull(country))` with  `r paste0 (mean(data_cmnn_wide$Switzerland))` average DALYs. 
+
+
+
+
